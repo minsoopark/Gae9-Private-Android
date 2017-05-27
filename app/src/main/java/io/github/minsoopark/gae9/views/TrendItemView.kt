@@ -1,7 +1,6 @@
 package io.github.minsoopark.gae9.views
 
 import android.content.Context
-import android.content.Intent
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ImageView
@@ -9,8 +8,10 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import io.github.minsoopark.gae9.R
-import io.github.minsoopark.gae9.activities.DetailActivity
 import io.github.minsoopark.gae9.network.models.Trend
+import android.util.TypedValue
+
+
 
 class TrendItemView : RelativeLayout {
 
@@ -29,6 +30,10 @@ class TrendItemView : RelativeLayout {
         ivThumb = findViewById(R.id.iv_thumb) as ImageView
         txtTitle = findViewById(R.id.txt_title) as TextView
         txtSites = findViewById(R.id.txt_sites) as TextView
+
+        val outValue = TypedValue()
+        context.theme.resolveAttribute(R.attr.selectableItemBackground, outValue, true)
+        setBackgroundResource(outValue.resourceId)
     }
 
     fun setTrend(trend: Trend) {
@@ -45,11 +50,5 @@ class TrendItemView : RelativeLayout {
         }
 
         txtSites.text = resources.getString(R.string.label_sites, siteFirst, siteSecond, trend.sites.size)
-
-        setOnClickListener {
-            val intent = Intent(context, DetailActivity::class.java)
-            intent.putExtra("trend", trend)
-            context.startActivity(intent)
-        }
     }
 }

@@ -1,5 +1,6 @@
 package io.github.minsoopark.gae9.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
@@ -8,11 +9,12 @@ import android.support.v7.widget.RecyclerView
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import io.github.minsoopark.gae9.R
 import io.github.minsoopark.gae9.adapters.TrendListAdapter
+import io.github.minsoopark.gae9.adapters.listeners.OnTrendItemClickListener
 import io.github.minsoopark.gae9.network.ApiManager
 import io.github.minsoopark.gae9.network.models.Trend
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import java.util.ArrayList
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -62,6 +64,14 @@ class MainActivity : AppCompatActivity() {
         rvTrends.layoutManager = layoutManager
 
         val adapter = TrendListAdapter(this, currentTrends)
+        adapter.setOnTrendItemClickListener(object : OnTrendItemClickListener {
+            override fun onItemClick(index: Int, trend: Trend) {
+                val intent = Intent(this@MainActivity, DetailActivity::class.java)
+                intent.putExtra("index", index)
+                intent.putExtra("trend", trend)
+                startActivity(intent)
+            }
+        })
         rvTrends.adapter = adapter
     }
 

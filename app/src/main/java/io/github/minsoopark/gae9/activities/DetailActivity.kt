@@ -6,6 +6,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import io.github.minsoopark.gae9.R
 import io.github.minsoopark.gae9.adapters.ImageListAdapter
+import io.github.minsoopark.gae9.adapters.compats.Timeline
 import io.github.minsoopark.gae9.network.models.Trend
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -39,25 +40,37 @@ class DetailActivity : AppCompatActivity() {
 
     private fun loadData() {
         val imageUrls = ArrayList<String>()
+        val timelines = ArrayList<Timeline>()
 
         trend?.let {
             downloadDocumentObservable(it.id)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { document ->
-                        val elements = document.select(".post-content").select("img")
-                        elements.forEachIndexed { index, element ->
-                            if (index != elements.size - 1) {
+                        val imgElements = document.select(".post-content").select("img")
+                        imgElements.forEachIndexed { index, element ->
+                            if (index != imgElements.size - 1) {
                                 val src = element.attr("src")
                                 imageUrls.add(src)
                             }
                         }
-                        rvImages.adapter.notifyDataSetChanged()
+
+                        val timelineElements = document.select("ul.timeline").select("li")
+                        timelineElements.forEach {
+                            val anchor = it.select("a")[0]
+
+                            val title = anchor.attr("title")
+                            val url = anchor.attr("href")
+                            val meta = it.select("span")[0].ownText()
+
+                            val timeline = Timeline(title, meta, url)
+                            timelines.add(timeline)
+                        }
+
+                        val adapter = ImageListAdapter(this, imageUrls, timelines)
+                        rvImages.adapter = adapter
                     }
         }
-
-        val adapter = ImageListAdapter(this, imageUrls)
-        rvImages.adapter = adapter
     }
 
     private fun downloadDocumentObservable(trendId: String): Observable<Document> {
