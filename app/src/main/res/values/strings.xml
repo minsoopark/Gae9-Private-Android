@@ -5,4 +5,5 @@
     <string name="title_daily">일간</string>
 
     <string name="label_sites">%1$s, %2$s 등 %3$d개의 사이트</string>
+    <string name="label_untitled">제목 없음</string>
 </resources>

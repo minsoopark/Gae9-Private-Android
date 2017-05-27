@@ -9,6 +9,7 @@ import android.os.Message
 import android.support.v4.widget.ContentLoadingProgressBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.MenuItem
 import android.webkit.*
 import io.github.minsoopark.gae9.R
 
@@ -22,6 +23,11 @@ class InAppBrowserActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_app_browser)
+
+        supportActionBar?.let {
+            it.title = ""
+            it.setDisplayHomeAsUpEnabled(true)
+        }
 
         wvBrowser = findViewById(R.id.wv_browser) as WebView
         pbContent = findViewById(R.id.pb_content) as ContentLoadingProgressBar
@@ -45,18 +51,23 @@ class InAppBrowserActivity : AppCompatActivity() {
                 return true
             }
 
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 pbContent.show()
             }
 
-            override fun onPageFinished(view: WebView?, url: String?) {
+            override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 pbContent.hide()
             }
         })
 
         wvBrowser.setWebChromeClient(object : WebChromeClient() {
+            override fun onReceivedTitle(view: WebView, title: String) {
+                super.onReceivedTitle(view, title)
+                supportActionBar?.title = title
+            }
+
             override fun onJsAlert(view: WebView, url: String, message: String, result: JsResult): Boolean {
                 AlertDialog.Builder(this@InAppBrowserActivity)
                         .setMessage(message)
@@ -99,5 +110,12 @@ class InAppBrowserActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

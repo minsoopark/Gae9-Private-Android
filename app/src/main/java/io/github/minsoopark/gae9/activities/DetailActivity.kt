@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.MenuItem
 import io.github.minsoopark.gae9.R
 import io.github.minsoopark.gae9.adapters.ImageListAdapter
 import io.github.minsoopark.gae9.adapters.compats.Timeline
@@ -28,6 +29,11 @@ class DetailActivity : AppCompatActivity() {
         rvImages = findViewById(R.id.rv_images) as RecyclerView
 
         trend = intent.getSerializableExtra("trend") as Trend
+
+        supportActionBar?.let {
+            it.title = trend?.title ?: getString(R.string.label_untitled)
+            it.setDisplayHomeAsUpEnabled(true)
+        }
 
         initView()
         loadData()
@@ -78,5 +84,12 @@ class DetailActivity : AppCompatActivity() {
             val document = Jsoup.connect("http://m.gae9.com/trend/$trendId").get()
             Observable.just(document)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
