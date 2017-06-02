@@ -14,6 +14,8 @@ import io.github.minsoopark.gae9.network.ApiManager
 import io.github.minsoopark.gae9.network.models.Trend
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
@@ -120,6 +122,25 @@ class MainActivity : AppCompatActivity() {
                 }
     }
 
+    private fun loadDailyData(dateString: String) {
+        val trendService = ApiManager.getTrendService()
+        val newTrendsObservable = trendService.getDaily(dateString)
+
+        newTrendsObservable.subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { result ->
+                    val trendListData = result.response
+                    val trends = trendListData.trends
+
+                    currentTrends.clear()
+                    currentTrends.addAll(trends)
+
+                    rvTrends.adapter.notifyDataSetChanged()
+
+                    containerRefresh.isRefreshing = false
+                }
+    }
+
     private fun clearList() {
         currentTrends.clear()
         rvTrends.adapter.notifyDataSetChanged()
@@ -127,6 +148,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onBest() {
+        supportActionBar?.title = getString(R.string.label_best_trend)
+
         containerRefresh.isEnabled = false
         clearList()
 
@@ -134,6 +157,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onNew() {
+        supportActionBar?.title = getString(R.string.label_new_trend)
+
         containerRefresh.isEnabled = true
         clearList()
 
@@ -142,7 +167,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onDaily() {
+        supportActionBar?.title = getString(R.string.label_daily_trend)
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateString = dateFormat.format(Date())
+
+        onDaily(dateString)
+    }
+
+    private fun onDaily(date: String) {
         containerRefresh.isEnabled = false
         clearList()
+
+        loadDailyData(date)
     }
 }
