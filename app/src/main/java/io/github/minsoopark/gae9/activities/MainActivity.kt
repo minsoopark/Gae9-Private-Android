@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             override fun onItemClick(index: Int, trend: Trend) {
                 val intent = Intent(this@MainActivity, DetailActivity::class.java)
                 intent.putExtra("index", index)
-                intent.putExtra("trend", trend)
+                intent.putExtra("trends", currentTrends)
                 startActivity(intent)
             }
         })

@@ -1,89 +1,55 @@
 package io.github.minsoopark.gae9.activities
 
 import android.os.Bundle
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.MenuItem
 import io.github.minsoopark.gae9.R
-import io.github.minsoopark.gae9.adapters.ImageListAdapter
-import io.github.minsoopark.gae9.adapters.compats.Timeline
+import io.github.minsoopark.gae9.adapters.TrendPagerAdapter
 import io.github.minsoopark.gae9.network.models.Trend
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
-import java.util.ArrayList
 
 class DetailActivity : AppCompatActivity() {
 
-    private lateinit var rvImages: RecyclerView
+    private lateinit var pagerTrends: ViewPager
+    private var adapter: TrendPagerAdapter? = null
 
-    private var trend: Trend? = null
+    private var trends: List<Trend>? = null
+    private var index: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        rvImages = findViewById(R.id.rv_images) as RecyclerView
+        pagerTrends = findViewById(R.id.pager_trends) as ViewPager
 
-        trend = intent.getSerializableExtra("trend") as Trend
+        trends = intent.getSerializableExtra("trends") as List<Trend>?
+        index = intent.getIntExtra("index", 0)
 
-        supportActionBar?.let {
-            it.title = trend?.title ?: getString(R.string.label_untitled)
-            it.setDisplayHomeAsUpEnabled(true)
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         initView()
-        loadData()
+        initEvent()
+        
+        pagerTrends.currentItem = index
     }
 
     private fun initView() {
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        rvImages.layoutManager = layoutManager
-    }
-
-    private fun loadData() {
-        val imageUrls = ArrayList<String>()
-        val timelines = ArrayList<Timeline>()
-
-        trend?.let {
-            downloadDocumentObservable(it.id)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { document ->
-                        val imgElements = document.select(".post-content").select("img")
-                        imgElements.forEachIndexed { index, element ->
-                            if (index != imgElements.size - 1) {
-                                val src = element.attr("src")
-                                imageUrls.add(src)
-                            }
-                        }
-
-                        val timelineElements = document.select("ul.timeline").select("li")
-                        timelineElements.forEach {
-                            val anchor = it.select("a")[0]
-
-                            val title = anchor.attr("title")
-                            val url = anchor.attr("href")
-                            val meta = it.select("span")[0].ownText()
-
-                            val timeline = Timeline(title, meta, url)
-                            timelines.add(timeline)
-                        }
-
-                        val adapter = ImageListAdapter(this, imageUrls, timelines)
-                        rvImages.adapter = adapter
-                    }
+        trends?.let {
+            adapter = TrendPagerAdapter(supportFragmentManager, it)
+            pagerTrends.adapter = adapter
         }
     }
 
-    private fun downloadDocumentObservable(trendId: String): Observable<Document> {
-        return Observable.defer {
-            val document = Jsoup.connect("http://m.gae9.com/trend/$trendId").get()
-            Observable.just(document)
-        }
+    private fun initEvent() {
+        pagerTrends.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(scrollState: Int) {}
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
+            override fun onPageSelected(position: Int) {
+                supportActionBar?.title = adapter?.getPageTitle(position)
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
