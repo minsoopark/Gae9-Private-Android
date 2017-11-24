@@ -10,4 +10,7 @@
     <string name="label_best_trend">인기 트렌드</string>
     <string name="label_new_trend">최신 트렌드</string>
     <string name="label_daily_trend">일간 트렌드</string>
+
+    <string name="menu_share">공유</string>
+    <string name="menu_open_in_browser">브라우저로 열기</string>
 </resources>

@@ -9,6 +9,7 @@ import android.os.Message
 import android.support.v4.widget.ContentLoadingProgressBar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
 import android.view.MenuItem
 import android.webkit.*
 import io.github.minsoopark.gae9.R
@@ -18,6 +19,8 @@ class InAppBrowserActivity : AppCompatActivity() {
 
     private lateinit var wvBrowser: WebView
     private lateinit var pbContent: ContentLoadingProgressBar
+
+    private var url: String = ""
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,7 +103,7 @@ class InAppBrowserActivity : AppCompatActivity() {
             }
         })
 
-        val url = intent.getStringExtra("url")
+        url = intent.getStringExtra("url")
         wvBrowser.loadUrl(url)
     }
 
@@ -112,9 +115,26 @@ class InAppBrowserActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menus_browser, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.action_share -> {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    putExtra(Intent.EXTRA_TEXT, url)
+                    type = "text/plain"
+                }
+                startActivity(intent)
+            }
+            R.id.action_open_in_browser -> {
+                val uri = Uri.parse(url)
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                startActivity(intent)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
